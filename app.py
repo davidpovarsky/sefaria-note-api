@@ -38,8 +38,8 @@ def send_note():
     }
 
     login_data = {
-        'email': email,
-        'password': password
+        'email': =davidpovarski1@gmail.com,
+        'password': sefaria
     }
 
     resp2 = session.post('https://www.sefaria.org.il/api/login', json=login_data, headers=headers)
