@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import requests
 import os
+import json  # נוסיף ליתר ביטחון, ל-dumps
 
 app = Flask(__name__)
 
@@ -32,7 +33,8 @@ def send_note():
     headers = {
         'Referer': 'https://www.sefaria.org.il/login',
         'Content-Type': 'application/json',
-        'X-CSRFToken': csrf_token
+        'X-CSRFToken': csrf_token,
+        'User-Agent': 'Mozilla/5.0'
     }
 
     login_data = {
@@ -47,27 +49,30 @@ def send_note():
 
     # Step 3: send note
     note_data = {
-        "json": {
-            "text": text,
-            "refs": [ref],
-            "type": "note",
-            "public": False
-        }
+        "text": text,
+        "refs": [ref],
+        "type": "note",
+        "public": False
     }
 
     headers_note = {
         "Content-Type": "application/x-www-form-urlencoded",
-        "X-CSRFToken": csrf_token
+        "X-CSRFToken": csrf_token,
+        "User-Agent": "Mozilla/5.0"
     }
 
-    response = session.post("https://www.sefaria.org.il/api/notes/", data={"json": requests.utils.json.dumps(note_data["json"])}, headers=headers_note)
+    response = session.post(
+        "https://www.sefaria.org.il/api/notes/",
+        data={"json": json.dumps(note_data)},
+        headers=headers_note
+    )
 
     if response.status_code != 200:
         return jsonify({'error': 'Failed to send note', 'response': response.text}), 400
 
     return jsonify({'success': True, 'result': response.json()}), 200
 
-# ✅ listen on the correct port!
+# ✅ Listen on the correct port!
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))  # use Render's port
+    port = int(os.environ.get('PORT', 5000))  # Use Render's port
     app.run(host='0.0.0.0', port=port)
