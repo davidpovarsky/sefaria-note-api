@@ -48,9 +48,13 @@ def send_note():
 
     resp2 = session.post('https://www.sefaria.org.il/login', data=login_data, headers=headers)
 
-    if resp2.status_code != 200 or 'user' not in resp2.json():
-        return jsonify({'error': 'Login failed', 'response': resp2.text}), 401
+try:
+    login_json = resp2.json()
+except ValueError:
+    return jsonify({'error': 'Login failed - response not JSON', 'response': resp2.text}), 500
 
+if resp2.status_code != 200 or 'user' not in login_json:
+    return jsonify({'error': 'Login failed', 'response': login_json}), 401
     # Step 3: send note
     note_data = {
         "text": text,
