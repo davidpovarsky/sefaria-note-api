@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import requests
 import os
-import json  # נוסיף ליתר ביטחון, ל-dumps
+import json
 
 app = Flask(__name__)
 
@@ -12,8 +12,12 @@ def index():
 @app.route('/send_note', methods=['POST'])
 def send_note():
     data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
+    
+    # ✅ כתוב כאן את שם המשתמש והסיסמה שלך (אופציה זמנית):
+    email = "davidpovarski1@gmail.com"
+    password = "sefaria"
+
+    # שדות מהבקשה
     ref = data.get('ref')
     text = data.get('text')
 
@@ -32,17 +36,17 @@ def send_note():
     # Step 2: log in
     headers = {
         'Referer': 'https://www.sefaria.org.il/login',
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
         'X-CSRFToken': csrf_token,
         'User-Agent': 'Mozilla/5.0'
     }
 
     login_data = {
-        'email': =davidpovarski1@gmail.com,
-        'password': sefaria
+        'email': email,
+        'password': password
     }
 
-    resp2 = session.post('https://www.sefaria.org.il/api/login', json=login_data, headers=headers)
+    resp2 = session.post('https://www.sefaria.org.il/api/login', data=login_data, headers=headers)
 
     if resp2.status_code != 200 or 'user' not in resp2.json():
         return jsonify({'error': 'Login failed', 'response': resp2.text}), 401
@@ -58,7 +62,8 @@ def send_note():
     headers_note = {
         "Content-Type": "application/x-www-form-urlencoded",
         "X-CSRFToken": csrf_token,
-        "User-Agent": "Mozilla/5.0"
+        "User-Agent": "Mozilla/5.0",
+        "Referer": "https://www.sefaria.org.il/"
     }
 
     response = session.post(
@@ -72,7 +77,6 @@ def send_note():
 
     return jsonify({'success': True, 'result': response.json()}), 200
 
-# ✅ Listen on the correct port!
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))  # Use Render's port
+    port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
